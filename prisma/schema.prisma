@@ -29,7 +29,7 @@ model User {
     emailAddress   String          @unique
     credits        Int             @default(150)
     userToProjects UserToProject[]
-    stripeTransactions stripeTransaction[]
+    stripeTransactions StripeTransction[]
 }
 
 model Project {
