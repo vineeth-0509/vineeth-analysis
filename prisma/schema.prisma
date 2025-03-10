@@ -41,6 +41,7 @@ model Project {
     deletedAt      DateTime
     userToProjects UserToProject[]
     commits Commit[]
+    meetings Meeting[]
 }
 
 model UserToProject {
@@ -76,4 +77,18 @@ model Commit {
     commitAuthorAvatar String
     commitDate DateTime
     summary String
+}
+
+//issues model,  Meeting: id, createdAt, updatedAt, meetingUrl, name, projetId, project. status MeetingStatus(@default(PROCESSING))  issues: isssue[]
+
+model Meeting{
+    id String @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    meetingUrl String
+    name String
+    projectId String
+    project Project @relation(fields:[projectId], references:[id])
+    //status MeetingStatus @default(PROCESSING)
+   // issues Issue[]
 }
