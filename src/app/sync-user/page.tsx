@@ -13,20 +13,37 @@ const SyncUser = async () =>{
         return notFound();
     }
     await db.user.upsert({
-        where :{
+        // where :{
+        //     emailAddress: user.emailAddresses[0]?.emailAddress ?? ""
+        // },
+        // update:{
+        //     imageUrl: user.imageUrl,
+        //     firstName: user.firstName,
+        //     lastName: user.lastName
+        // },
+        // create:{
+        //     id: user.id,
+        //     emailAddress: user.emailAddresses[0]?.emailAddress ?? "",
+        //     imageUrl: user.imageUrl,
+        //     firstName: user.firstName,
+        //     lastName: user.lastName 
+        // }
+
+        where:{
             emailAddress: user.emailAddresses[0]?.emailAddress ?? ""
         },
         update:{
-            imageUrl: user.imageUrl,
-            firstName: user.firstName,
-            lastName: user.lastName
+            imageUrl : user.imageUrl,
+            emailAddress: user.emailAddress,
+            firstName:user.firstName,
+            lastName: user.lastName,
         },
         create:{
             id: user.id,
             emailAddress: user.emailAddresses[0]?.emailAddress ?? "",
             imageUrl: user.imageUrl,
             firstName: user.firstName,
-            lastName: user.lastName 
+            lastName: user.lastName
         }
     })
     return redirect('/dashboard')
