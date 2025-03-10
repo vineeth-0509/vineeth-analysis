@@ -40,8 +40,8 @@ model Project {
     githubToken    String?
     deletedAt      DateTime
     userToProjects UserToProject[]
-    commits Commit[]
-    meetings Meeting[]
+    commits        Commit[]
+    meetings       Meeting[]
 }
 
 model UserToProject {
@@ -64,37 +64,52 @@ model SourceCodeaEmbeddings {
     projectId  String
     project    String
 }
+
 //commit  id, createdAt, updatedAt, projectId, project @relation,  commitMessage,commitHash, commitAuthorName, commitAuthorAvatar,commitDate, summary
 model Commit {
-    id String @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    projectId String
-    project Project @relation(fields:[projectId], references:[id])
-    commitMessage String
-    commitHash String
-    commitAuthorName String
+    id                 String   @id @default(cuid())
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
+    projectId          String
+    project            Project  @relation(fields: [projectId], references: [id])
+    commitMessage      String
+    commitHash         String
+    commitAuthorName   String
     commitAuthorAvatar String
-    commitDate DateTime
-    summary String
+    commitDate         DateTime
+    summary            String
 }
 
 //issues model,  Meeting: id, createdAt, updatedAt, meetingUrl, name, projetId, project. status MeetingStatus(@default(PROCESSING))  issues: isssue[]
 
-model Meeting{
-    id String @id @default(cuid())
+model Meeting {
+    id         String        @id @default(cuid())
+    createdAt  DateTime      @default(now())
+    updatedAt  DateTime      @updatedAt
+    meetingUrl String
+    name       String
+    projectId  String
+    project    Project       @relation(fields: [projectId], references: [id])
+    status     MeetingStatus @default(PROCESSING)
+    issues     Issue[]
+    //issues  id, createdAt, updatedAt, start, end, gist, headline,summary, meetingId, meeting
+}
+
+model Issue {
+    id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    meetingUrl String
-    name String
-    projectId String
-    project Project @relation(fields:[projectId], references:[id])
-    status MeetingStatus @default(PROCESSING)
-   // issues Issue[]
+    start     String
+    end       String
+    gist      String
+    headLine  String
+    summary   String
+    meetingId String
+    meeting   Meeting  @relation(fields: [meetingId], references: [id])
 }
 
 //meetingStatus
-enum MeetingStatus{
+enum MeetingStatus {
     PROCESSING
     COMPLETED
 }
