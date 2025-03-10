@@ -29,6 +29,7 @@ model User {
     emailAddress   String          @unique
     credits        Int             @default(150)
     userToProjects UserToProject[]
+    stripeTransactions stripeTransaction[]
 }
 
 model Project {
@@ -42,6 +43,7 @@ model Project {
     userToProjects UserToProject[]
     commits        Commit[]
     meetings       Meeting[]
+    questions Question[]
 }
 
 model UserToProject {
@@ -112,4 +114,27 @@ model Issue {
 enum MeetingStatus {
     PROCESSING
     COMPLETED
+}
+
+//Question: //id, createdAt,updatedAt, question, answer,fileReference JSON,projectId , project,userId, user
+
+model Question{
+    id String @id @default(cuid())
+    createdAt DateTime @default(now())
+    updaetdAt  DateTime @updatedAt
+    question String
+    answer String
+    fileReference Json
+    projectId String
+    project Project @relation(fields:[projectId],references:[id])
+}
+
+//stripeTransactions: id, createdAt, updatedAt, userId,user, credits
+model StripeTransction{
+    id String @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    userId String
+    user User @relation(fields:[userId], references:[id])
+    credits Int
 }
