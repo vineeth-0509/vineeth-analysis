@@ -89,6 +89,12 @@ model Meeting{
     name String
     projectId String
     project Project @relation(fields:[projectId], references:[id])
-    //status MeetingStatus @default(PROCESSING)
+    status MeetingStatus @default(PROCESSING)
    // issues Issue[]
+}
+
+//meetingStatus
+enum MeetingStatus{
+    PROCESSING
+    COMPLETED
 }
