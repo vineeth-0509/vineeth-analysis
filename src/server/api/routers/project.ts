@@ -40,7 +40,7 @@ export const projectRouter = createTRPCRouter({
     ).mutation(async({ctx, input})=>{
         const user = await ctx.db.user.findUnique({
             where:{
-                id: ctx.user.userId as string
+                id: ctx.user.userId !
             }
         })
         if(!user){
