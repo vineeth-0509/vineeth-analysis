@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import useProject from "@/hooks/use-project";
 //import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import {
@@ -49,20 +50,10 @@ const items = [
   },
 ];
 
-const projects = [
-  {
-    name: "Project 1",
-  },
-  {
-    name: "Project 2",
-  },
-  {
-    name: "Project 3",
-  },
-];
+
 
 export function AppSidebar() {
-  //const {projects, projectId, setProjectId} = useProject();
+  const {projects, projectId, setProjectId} = useProject();
   const pathname = usePathname();
   const { open } = useSidebar();
   return (
@@ -114,14 +105,14 @@ export function AppSidebar() {
                         <div
                           className="flex items-center gap-3"
                           onClick={() => {
-                            //setProjectId(project.id)
+                            setProjectId(project.id)
                           }}
                         >
                           <div
                             className={cn(
                               "flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary",
                               {
-                                "bg-primary text-white": true,
+                                "bg-primary text-white": project.id === projectId,
                               },
                             )}
                           >

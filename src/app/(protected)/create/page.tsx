@@ -26,6 +26,7 @@ export default function CreatePage() {
     },{
         onSuccess:()=>{
             toast.success("Project created Successfully")
+            refetch();
             reset();
         },onError:()=>{
             toast.error("Failed to create a project")
