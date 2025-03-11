@@ -2,23 +2,14 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
     previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider   = "postgresql"
+    url        = env("DATABASE_URL")
     extensions = [vector]
-}
-
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@index([name])
 }
 
 model User {
@@ -31,7 +22,9 @@ model User {
     emailAddress   String          @unique
     credits        Int             @default(150)
     userToProjects UserToProject[]
-    stripeTransactions StripeTransction[]
+    questionsAsked Question[]
+
+    stripeTransactions StripeTransaction[]
 }
 
 model Project {
@@ -41,39 +34,44 @@ model Project {
     name           String
     githubUrl      String
     githubToken    String?
-    deletedAt      DateTime
+    deletedAt      DateTime?
     userToProjects UserToProject[]
     commits        Commit[]
+    savedQuestions Question[]
     meetings       Meeting[]
-    questions Question[]
+
+    SourceCodeEmbedding SourceCodeEmbedding[]
 }
 
 model UserToProject {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
     userId    String
     projectId String
-    user      User     @relation(fields: [userId], references: [id])
-    project   Project  @relation(fields: [projectId], references: [id])
+
+    user    User    @relation(fields: [userId], references: [id])
+    project Project @relation(fields: [projectId], references: [id])
+
+    @@unique([userId, projectId])
 }
 
-//SourceCodeaEmbeddings: id , sourceCode, fileName, summary, porjectId,project
-
-model SourceCodeaEmbeddings {
-    id         String @id @default(cuid())
-    sourceCode String
-    fileName   String
-    summary    String
-    projectId  String
-    project    String
+model SourceCodeEmbedding {
+    id               String                      @id @default(cuid())
+    summaryEmbedding Unsupported("vector(768)")? //this is particular model gemini ai provide
+    sourceCode       String
+    fileName         String
+    summary          String
+    projectId        String
+    project          Project                     @relation(fields: [projectId], references: [id])
 }
 
-//commit  id, createdAt, updatedAt, projectId, project @relation,  commitMessage,commitHash, commitAuthorName, commitAuthorAvatar,commitDate, summary
 model Commit {
-    id                 String   @id @default(cuid())
-    createdAt          DateTime @default(now())
-    updatedAt          DateTime @updatedAt
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     projectId          String
     project            Project  @relation(fields: [projectId], references: [id])
     commitMessage      String
@@ -81,10 +79,9 @@ model Commit {
     commitAuthorName   String
     commitAuthorAvatar String
     commitDate         DateTime
+    //ai summary
     summary            String
 }
-
-//issues model,  Meeting: id, createdAt, updatedAt, meetingUrl, name, projetId, project. status MeetingStatus(@default(PROCESSING))  issues: isssue[]
 
 model Meeting {
     id         String        @id @default(cuid())
@@ -96,9 +93,23 @@ model Meeting {
     project    Project       @relation(fields: [projectId], references: [id])
     status     MeetingStatus @default(PROCESSING)
     issues     Issue[]
-    //issues  id, createdAt, updatedAt, start, end, gist, headline,summary, meetingId, meeting
 }
 
+model StripeTransaction {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    userId    String
+    user      User     @relation(fields: [userId], references: [id])
+    credits   Int
+}
+
+enum MeetingStatus {
+    PROCESSING
+    COMPLETED
+}
+
+// list of issues returned from the assembly ai
 model Issue {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
@@ -106,37 +117,21 @@ model Issue {
     start     String
     end       String
     gist      String
-    headLine  String
+    headline  String
     summary   String
     meetingId String
     meeting   Meeting  @relation(fields: [meetingId], references: [id])
 }
 
-//meetingStatus
-enum MeetingStatus {
-    PROCESSING
-    COMPLETED
-}
-
-//Question: //id, createdAt,updatedAt, question, answer,fileReference JSON,projectId , project,userId, user
-
-model Question{
-    id String @id @default(cuid())
-    createdAt DateTime @default(now())
-    updaetdAt  DateTime @updatedAt
-    question String
-    answer String
-    fileReference Json
-    projectId String
-    project Project @relation(fields:[projectId],references:[id])
-}
-
-//stripeTransactions: id, createdAt, updatedAt, userId,user, credits
-model StripeTransction{
-    id String @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    userId String
-    user User @relation(fields:[userId], references:[id])
-    credits Int
+model Question {
+    id              String   @id @default(cuid())
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    question        String
+    answer          String
+    filesReferences Json?
+    projectId       String
+    project         Project  @relation(fields: [projectId], references: [id])
+    userId          String
+    user            User     @relation(fields: [userId], references: [id])
 }

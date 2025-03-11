@@ -52,6 +52,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
     };
   },
 });
+export const createTRPCRouter = t.router;
 
 /**
  * Create a server-side caller.
@@ -72,7 +73,6 @@ export const createCallerFactory = t.createCallerFactory;
  *
  * @see https://trpc.io/docs/router
  */
-export const createTRPCRouter = t.router;
 
 /**
  * Middleware for timing procedure execution and adding an artificial delay in development.
@@ -81,12 +81,12 @@ export const createTRPCRouter = t.router;
  * network latency that would occur in production but not in local development.
  */
 
-const isAuthenticated = t.middleware(async ({ ctx, next }) => {
+const isAuthenticated = t.middleware(async ({ next, ctx }) => {
   const user = await auth();
   if (!user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "You must be loggged in to access this resouce",
+      message: "You must be logged in to access this resource",
     });
   }
   return next({
@@ -96,6 +96,7 @@ const isAuthenticated = t.middleware(async ({ ctx, next }) => {
     },
   });
 });
+
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
