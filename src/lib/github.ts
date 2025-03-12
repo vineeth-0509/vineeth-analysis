@@ -1,55 +1,94 @@
 import { db } from "@/server/db";
 import { Octokit } from "octokit";
+import axios from "axios";
+import { aiSummariseCommit } from "./gemini";
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
-//const githubUrl = 'https://github.com/docker/genai-stack'
+//const githubUrl = "https://github.com/vineeth-0509/genz-course";
+
+interface Response {
+  commitHash: string;
+  commitMessage: string;
+  commitAuthorName: string;
+  commitAuthorAvatar: string;
+  commitDate: string;
+}
 
 export const getCommitHashes = async (
   githubUrl: string,
-): Promise<
-  {
-    commitHash: string;
-    commitMessage: string;
-    commitAuthorName: string;
-    commitAuthorAvatar: string;
-    commitDate: string;
-  }[]
-> => {
+): Promise<Response[]> => {
   const [owner, repo] = githubUrl.split("/").slice(-2);
   if (!owner || !repo) {
     throw new Error("Invalid github url");
   }
+  // const response = await octokit.request(`GET/repos/${owner}/${repo}/commits`);
+  // return response.data.map((commit) => ({}));
   const { data } = await octokit.rest.repos.listCommits({
     owner,
     repo,
   });
+
   const sortedCommits = data.sort(
     (a: any, b: any) =>
       new Date(b.commit.author.date).getTime() -
       new Date(a.commit.author.date).getTime(),
   ) as any[];
-  return sortedCommits.slice(0, 15).map((commit: any) => ({
+  return sortedCommits.slice(0, 10).map((commit: any) => ({
     commitHash: commit.sha as string,
-    commitMessage: commit.commit.message ?? "",
+    commitMessage: (commit.commit?.message as string) ?? "",
     commitAuthorName: (commit.commit?.author?.name as string) ?? "",
     commitAuthorAvatar: commit?.author?.avatar_url ?? "",
     commitDate: commit.commit?.author.date ?? "",
   }));
 };
 
+//console.log(await getCommitHashes(githubUrl));
+
 export const pollCommits = async (projectId: string) => {
   const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
   const commitHashes = await getCommitHashes(githubUrl);
-  const unproccessedCommits = await filterUnproccessedCommits(
+  const unprocessedCommits = await filterUnprocessedCommits(
     projectId,
     commitHashes,
   );
-
-  return unproccessedCommits;
+  const summaryResponses = await Promise.allSettled(
+    unprocessedCommits.map((commit) => {
+      return summariseCommit(githubUrl, commit.commitHash);
+    }),
+  );
+  const summaries = summaryResponses.map((response) => {
+    if (response.status === "fulfilled") {
+      return response.value as string;
+    }
+    return "";
+  });
+  const commit = await db.commit.createMany({
+    data: summaries.map((summary, index) => {
+      console.log(`Processing commits ${index}`);
+      return {
+        projectId: projectId,
+        commitHash: unprocessedCommits[index]!.commitHash,
+        commitMessage: unprocessedCommits[index]!.commitMessage,
+        commitAuthorName: unprocessedCommits[index]!.commitAuthorName, // Renamed commitAuthor to commitAuthorName
+        commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
+        commitDate: unprocessedCommits[index]!.commitDate,
+        summary,
+      };
+    }),
+  });
+  return commit;
 };
 
-export function summariseCommit(githubUrl: string, commitHash: string) {}
+async function summariseCommit(githubUrl: string, commitHash: string) {
+  //get the diff and pass the diff in to the ai.
+  const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
+    headers: {
+      Accept: "application/vnd.github.v3.diff",
+    },
+  });
+  return (await aiSummariseCommit(data)) || "";
+}
 
 async function fetchProjectGithubUrl(projectId: string) {
   const project = await db.project.findUnique({
@@ -60,27 +99,23 @@ async function fetchProjectGithubUrl(projectId: string) {
       githubUrl: true,
     },
   });
+  if (!project) {
+    throw new Error(`Project with Id ${projectId} deos not exist`);
+  }
   if (!project?.githubUrl) {
     throw new Error("Project has no github url");
   }
-  return { project, githubUrl: project?.githubUrl };
+  return { project, githubUrl: project.githubUrl };
 }
 
-async function filterUnproccessedCommits(
+async function filterUnprocessedCommits(
   projectId: string,
-  commitHashes: {
-    commitHash: string;
-    commitMessage: string;
-    commitAuthorName: string;
-    commitAuthorAvatar: string;
-    commitDate: string;
-  }[],
+  commitHashes: Response[],
 ) {
   const processedCommits = await db.commit.findMany({
-    where: {
-      projectId,
-    },
+    where: { projectId },
   });
+
   const unprocessedCommits = commitHashes.filter(
     (commit) =>
       !processedCommits.some(
@@ -90,4 +125,5 @@ async function filterUnproccessedCommits(
   return unprocessedCommits;
 }
 
-pollCommits("cm84jelsi0003w0geq8unykij").then(console.log);
+
+pollCommits("cm860hckx0003sg4homi9faxy").then(console.log);

@@ -1,4 +1,5 @@
 //import { pollCommits } from "@/lib/github";
+import { pollCommits } from "@/lib/github";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import z from "zod";
 //import { checkCredits, indexGithubRepo } from "@/lib/github-loader";
@@ -38,11 +39,11 @@ export const projectRouter = createTRPCRouter({
          },
        });
     //   // await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
-    //   // await pollCommits(project.id);
-    //   // await ctx.db.user.update({
-    //   //   where: { id: ctx.user.userId! },
-    //   //   data: { credits: { decrement: fileCount } },
-    //   // });
+      await pollCommits(project.id);
+      // await ctx.db.user.update({
+      //   where: { id: ctx.user.userId! },
+      //   //data: { credits: { decrement: fileCount } },
+      // });
       return project;
     }),
  getProjects: protectedProcedure.query(async ({ctx})=> {
@@ -65,7 +66,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      //pollCommits(input.projectId).then().catch(console.error);
+      pollCommits(input.projectId).then().catch(console.error);
       return await ctx.db.commit.findMany({
         where: { projectId: input.projectId },
       });
