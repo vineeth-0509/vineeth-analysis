@@ -20,6 +20,9 @@ const DashboardPage = () => {
   const { project } = useProject();
   return (
     <div>
+     <div>
+      {project?.id}
+     </div>
       <div className="flex flex-wrap items-center justify-between gap-y-4">
         {/* github link */}
         <div className="m-4 w-fit rounded-md bg-primary px-4 py-3">
