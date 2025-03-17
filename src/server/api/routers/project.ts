@@ -2,6 +2,7 @@
 import { pollCommits } from "@/lib/github";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import z from "zod";
+import { indexGithubRepo } from "@/lib/github-loader";
 //import { checkCredits, indexGithubRepo } from "@/lib/github-loader";
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -36,7 +37,7 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
-      //   // await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
+     await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
       await pollCommits(project.id);
       // await ctx.db.user.update({
       //   where: { id: ctx.user.userId! },
