@@ -120,6 +120,7 @@ async function filterUnprocessedCommits(
         (processedCommit) => processedCommit.commitHash === commit.commitHash,
       ),
   );
+  
   return unprocessedCommits;
 }
 
