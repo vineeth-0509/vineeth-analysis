@@ -5,7 +5,7 @@ import { aiSummariseCommit } from "./gemini";
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
-//const githubUrl = "https://github.com/vineeth-0509/genz-course";
+const githubUrl = "https://github.com/vineeth-0509/genz-course";
 
 interface Response {
   commitHash: string;
@@ -22,8 +22,6 @@ export const getCommitHashes = async (
   if (!owner || !repo) {
     throw new Error("Invalid github url");
   }
-  // const response = await octokit.request(`GET/repos/${owner}/${repo}/commits`);
-  // return response.data.map((commit) => ({}));
   const { data } = await octokit.rest.repos.listCommits({
     owner,
     repo,
@@ -43,7 +41,7 @@ export const getCommitHashes = async (
   }));
 };
 
-//console.log(await getCommitHashes(githubUrl));
+console.log(await getCommitHashes(githubUrl));
 
 export const pollCommits = async (projectId: string) => {
   const { project, githubUrl } = await fetchProjectGithubUrl(projectId);
@@ -125,5 +123,4 @@ async function filterUnprocessedCommits(
   return unprocessedCommits;
 }
 
-
-pollCommits("cm860hckx0003sg4homi9faxy").then(console.log);
+//pollCommits("cm860hckx0003sg4homi9faxy").then(console.log);
