@@ -10,13 +10,15 @@ import dynamic from "next/dynamic";
 
 import TeamMembers from "./team-members";
 import ArchiveButton from "./archive-button";
-import AskQuestionCard from "./ask-question-card";
+
 import MeetingCard from "./MeetingCard";
 import CommitLog from "./commit-log";
 import { ExternalLink, Github } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import AskQuestionCard from "./ask-question-card";
 
 const DashboardPage = () => {
-  // const { user } = useUser(); //it provides access to the current users object, which contains all the data for a single user in your application and provides methods to manage their account.
+  const { user } = useUser(); //it provides access to the current users object, which contains all the data for a single user in your application and provides methods to manage their account.
   const { project } = useProject();
   return (
     <div>
@@ -52,7 +54,7 @@ const DashboardPage = () => {
 
       <div className="ml-4 mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
-          {/* <AskQuestionCard /> */}
+          <AskQuestionCard />
           <MeetingCard />
         </div>
       </div>
