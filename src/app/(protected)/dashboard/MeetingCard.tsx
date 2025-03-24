@@ -2,7 +2,7 @@
 import { useDropzone } from "react-dropzone";
 import { Card } from "@/components/ui/card";
 import React, { useState } from "react";
-//import { uploadFile } from "@/lib/firebase";
+import { uploadFile } from "@/lib/firebase";
 import { Presentation, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
@@ -34,50 +34,50 @@ const MeetingCard = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const uploadMeeting = api.project.uploadMeeting.useMutation();
-//   const { getRootProps, getInputProps } = useDropzone({
-//     accept: {
-//       "audio/*": [".mp3", ".wav", ".m4a"],
-//     },
-//     multiple: false,
-//     maxSize: 50_000_000,
-//     onDrop: async (acceptedFiles) => {
-//       if (!project) return;
-//       setIsUploading(true);
-//       console.log(acceptedFiles);
-//       const file = acceptedFiles[0];
-//       if (!file) return;
-//       const downloadUrl = (await uploadFile(
-//         file as File,
-//         setProgress,
-//       )) as string
-//       uploadMeeting.mutate(
-//         {
-//           projectId: project.id,
-//           meetingUrl: downloadUrl,
-//           name: file.name,
-//         },
-//         {
-//           onSuccess: (meeting) => {
-//             toast.success("Meeting uploaded successfully");
-//             router.push("/meetings");
-//             processMeeting.mutateAsync({
-//               meetingUrl: downloadUrl,
-//               meetingId: meeting.id,
-//               projectId: project.id,
-//             });
-//           },
-//           onError: () => {
-//             toast.error("Failed to upload meeting");
-//           },
-//         },
-//       );
-//       setIsUploading(false);
-//     },
-//   });
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: {
+      "audio/*": [".mp3", ".wav", ".m4a"],
+    },
+    multiple: false,
+    maxSize: 50_000_000,
+    onDrop: async (acceptedFiles) => {
+      if (!project) return;
+      setIsUploading(true);
+      console.log(acceptedFiles);
+      const file = acceptedFiles[0];
+      if (!file) return;
+      const downloadUrl = (await uploadFile(
+        file as File,
+        setProgress,
+      )) as string
+      uploadMeeting.mutate(
+        {
+          projectId: project.id,
+          meetingUrl: downloadUrl,
+          name: file.name,
+        },
+        {
+          onSuccess: (meeting) => {
+            toast.success("Meeting uploaded successfully");
+            router.push("/meetings");
+            processMeeting.mutateAsync({
+              meetingUrl: downloadUrl,
+              meetingId: meeting.id,
+              projectId: project.id,
+            });
+          },
+          onError: () => {
+            toast.error("Failed to upload meeting");
+          },
+        },
+      );
+      setIsUploading(false);
+    },
+  });
   return (
     <Card
       className="col-span-2 flex flex-col items-center justify-center p-10"
-      //{...getRootProps()}
+      {...getRootProps()}
     >
       {!isUploading && (
         <>
@@ -95,10 +95,7 @@ const MeetingCard = () => {
             <Button disabled={isUploading}>
               <Upload className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
               Upload Meeting
-              <input className="hidden" 
-              /*{...getInputProps()}*/
-
-               />
+              <input className="hidden" {...getInputProps()} />
             </Button>
           </div>
         </>

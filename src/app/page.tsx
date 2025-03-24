@@ -1,3 +1,9 @@
+
+import { TypewriterEffectDemo } from "@/components/ui/typewriter";
 export default async function Home() {
-  return <h1 className="text-red-500">Hello world</h1>;
+  return (
+    <div>
+      <TypewriterEffectDemo />
+    </div>
+  );
 }
